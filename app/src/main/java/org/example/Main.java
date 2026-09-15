@@ -93,15 +93,6 @@ public class Main {
 
         // Make the window visible
         glfwShowWindow(window);
-
-        // Set Vertex Points
-        float[] vertices = {
-            0.0,  0.5,
-           -0.5, -0.5,
-            0.5, -0.5
-        };
-
-
     }
 
     private void loop() {
