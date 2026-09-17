@@ -1,12 +1,14 @@
 # JavaByte
 
+
+
 An isometric, low-poly 3D renderer and mini game-engine, built entirely in Java using **LWJGL 3** (OpenGL, GLFW, OpenAL) and **JOML** for math.
 
 The goal is a lightweight, reusable engine capable of running a small mini-game — not just a one-off demo — covering rendering, input, audio, and a core game loop.
 
 ## Features (planned)
 
-- [ ] Window creation and OpenGL context setup (GLFW)
+- [x] Window creation and OpenGL context setup (GLFW)
 - [ ] Isometric camera (orthographic projection, fixed-angle view)
 - [ ] Low-poly mesh rendering with flat shading
 - [ ] Input handling (keyboard/mouse via GLFW)
