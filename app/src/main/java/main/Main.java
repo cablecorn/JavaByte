@@ -15,28 +15,35 @@ public class Main implements Runnable{
 	public  final int WIDTH = 1280, HEIGHT = 760;
     public Mesh testMesh;
     public ShaderProgram testProgram;
+
+    private float playerX, playerY = 0.0f;
+    private float speed = 1.0f;
+    private long lastTime;
 	
-	public void start() { // this starts the whole game basicly title is game for testing  cyrrentkly 
+	public void start() {
 		game = new Thread(this, "game");
 		game.start();
 	}
 	
 	public void init() {
         float [] vertices = {
-        0.0f, 0.5f, 0.0f,  // top corner
-        1.0f, 0.0f, 0.0f,  // red fragment
-       -0.5f, -0.5f, 0.0f,  // bottom left corner
-        0.0f, 1.0f, 0.0f,   // green fragment
-        0.5f, -0.5f, 0.0f,  // bottom right corner
-        0.0f, 0.0f, 1.0f   // blue fragment
+        0.0f, 0.5f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+       -0.5f, -0.5f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f, 0.0f, 1.0f
         };
 		System.out.print("Ilitlizeing game!");
 		window = new Window(WIDTH, HEIGHT, "GAME");
-		window.setBackGroundColor(1.0f, 0, 0); // this set the background in red for testing 
-		window.create(); // this createzs the window 
-		window.setFullscrean(false); // makes it into a full screenm
+		window.setBackGroundColor(1.0f, 1.0f, 1.0f);
+		window.create();
+		window.setFullscrean(false);
 
-        testMesh = new Mesh(vertices);
+        lastTime = System.nanoTime();
+
+        int [] indices = {0, 1, 2};
+        testMesh = new Mesh(vertices, indices);
         try {
         testProgram = new ShaderProgram(
                     "src/main/java/engine/shaders/basic.vert",
@@ -49,39 +56,51 @@ public class Main implements Runnable{
         }
     }
 	
-	public void run () { // current funtion that run the updating cunters 
+	public void run () {
 		init();
-		while (!window.shouldClose() && !Input.isKeyDown(GLFW.GLFW_KEY_ESCAPE)) { // this should close mehtod funtion allows us to cloase the program otherwise your gone lol
+		while (!window.shouldClose() && !Input.isKeyDown(GLFW.GLFW_KEY_ESCAPE)) {
 			update();
 			render();
 			if(Input.isKeyDown(GLFW.GLFW_KEY_F11)) window.setFullscrean(!window.fullscrean());
-			
 		}
 		window.destory();
-		
 	}
 	
 	private void update() {
-		//System.out.print("update game!");
-		window.update(); //   process input/window events (does NOT render anything bascily make sure  imput is there)
-		if(Input.isButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-			System.out.println( "X: " + Input.getScrollX() + ", Y:" + Input.getScrollY()); // testing scroll track when we left click it will show value  // testing if its tracks
-			
+		window.update();
+        long now = System.nanoTime();
+        float delta = (now - lastTime) / 1_000_000_000.0f;
+        lastTime = now;
+
+        float dx = 0, dy = 0;
+
+        if (Input.isKeyDown(GLFW.GLFW_KEY_W)) dy += 1;
+        if (Input.isKeyDown(GLFW.GLFW_KEY_S)) dy -= 1;
+		if (Input.isKeyDown(GLFW.GLFW_KEY_D)) dx += 1;
+		if (Input.isKeyDown(GLFW.GLFW_KEY_A)) dx -= 1;
+
+		float length = (float) Math.sqrt(dx * dx + dy * dy);
+		if(length > 0) {
+			dx /= length;
+			dy /= length;
 		}
-		
+
+		playerX += dx * speed * delta;
+		playerY += dy * speed * delta;
+
+		if(Input.isButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
+			System.out.println( "X: " + Input.getScrollX() + ", Y:" + Input.getScrollY());
+		}
 	}
 	
 	private void render() {
         testProgram.Use();
+        testProgram.SetMovement(playerX, playerY);
         testMesh.Draw();
-		//System.out.print("render game!");
-		window.swapBuffers(); // this willl to render the frame that is just done meain it will render one frame fully before moving on
+		window.swapBuffers();
 	}
-	
 	
 	public static void main(String[] arg) {
 		new Main().start();
-		
 	}
-
 }
