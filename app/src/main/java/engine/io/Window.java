@@ -6,6 +6,8 @@ import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 
+import org.lwjgl.glfw.GLFWErrorCallback;
+
 public class Window {
 	
 	private int width, height; // var need for how window size display
@@ -40,6 +42,7 @@ public class Window {
 	}
 	//================================================================
 	public void create() {
+		GLFWErrorCallback.createPrint(System.err).set();
 		if(!GLFW.glfwInit()) { //this return true or false if it ran
 			System.err.println("ERROR: GLFW WASNT INITLAIZED");
 			return;

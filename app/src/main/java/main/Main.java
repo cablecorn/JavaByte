@@ -8,17 +8,19 @@ import engine.io.Input;
 import engine.io.Window;
 import engine.render.ShaderProgram;
 import engine.render.Mesh;
+import engine.maths.Vector3f;
+import engine.graphics.Vertex;
 
 public class Main implements Runnable{
 	public Thread game; 
 	public  Window window;
 	public  final int WIDTH = 1280, HEIGHT = 760;
-    public Mesh testMesh;
-    public ShaderProgram testProgram;
+    public Mesh player;
+	public ShaderProgram testProgram;
 
-    private float playerX, playerY = 0.0f;
-    private float speed = 1.0f;
-    private long lastTime;
+	private float playerX, playerY = 0.0f;
+	private float speed = 1.0f;
+	private long lastTime;
 	
 	public void start() {
 		game = new Thread(this, "game");
@@ -26,14 +28,6 @@ public class Main implements Runnable{
 	}
 	
 	public void init() {
-        float [] vertices = {
-        0.0f, 0.5f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-       -0.5f, -0.5f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.0f, 1.0f
-        };
 		System.out.print("Ilitlizeing game!");
 		window = new Window(WIDTH, HEIGHT, "GAME");
 		window.setBackGroundColor(1.0f, 1.0f, 1.0f);
@@ -42,8 +36,7 @@ public class Main implements Runnable{
 
         lastTime = System.nanoTime();
 
-        int [] indices = {0, 1, 2};
-        testMesh = new Mesh(vertices, indices);
+        player = createDot(0.6f, 32);
         try {
         testProgram = new ShaderProgram(
                     "src/main/java/engine/shaders/basic.vert",
@@ -55,6 +48,40 @@ public class Main implements Runnable{
             System.exit(1);
         }
     }
+
+	private Mesh createDot(float radius, int segments) {
+		float aspect = (float) HEIGHT / WIDTH;
+		// raw vertex data
+		Vertex [] vertices = new Vertex [segments + 1];
+		// important indices
+		int [] indices = new int [segments * 3];
+
+		// set origin point for circle
+		vertices[0] = new Vertex(new Vector3f(0.0f, 0.0f, 0.0f), new Vector3f(0.0f, 0.0f, 0.0f));
+
+		for (int i = 0; i < segments; i++) {
+			// Angle of this edge point around the center. In radians
+			double angle = 2 * Math.PI * i / segments;
+			
+			// Point on a circle: x = cos(angle), y = sin(angle), scaled by radius
+			// x also gets aspect correlation from above.
+			float x = (float) (Math.cos(angle) * radius * aspect);
+			float y = (float) ((Math.sin(angle) * radius));
+			
+			// Edge points are stored at indices 1.. segments (0 is center)
+			vertices[i + 1] = new Vertex(new Vector3f(x, y, 0.0f), new Vector3f(x, y, 0.0f));
+			
+			// triangle 1 = center, this edge point, next edge point.
+			indices[i * 3] = 0;
+			indices[i * 3 + 1] = i + 1;
+			
+			// (i + 1) % segments wraps the last triangle back to the first edge
+			// point so the shape closes. The +1 skips the center at index 0
+			indices[i * 3 + 2] = (i+1) % segments + 1;
+		}
+
+		return new Mesh(vertices, indices);
+	}
 	
 	public void run () {
 		init();
@@ -96,7 +123,7 @@ public class Main implements Runnable{
 	private void render() {
         testProgram.Use();
         testProgram.SetMovement(playerX, playerY);
-        testMesh.Draw();
+        player.Draw();
 		window.swapBuffers();
 	}
 	
