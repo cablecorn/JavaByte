@@ -4,18 +4,21 @@ import org.lwjgl.glfw.GLFW;
 
 import engine.graphics.Mesh;
 import engine.graphics.Renderer;
-import engine.graphics.Vertex;
-import engine.io.Input;
-import engine.io.Window;
-import engine.maths.Vector3f;
 
 //import org.joml.Vector3f; // JOML version — uncomment this + comment out the line above to swap
 
 
+
+import engine.graphics.Vertex;
+import engine.io.Input;
+import engine.io.Window;
+import engine.maths.Vector3f;
+import engine.graphics.Shader;
 public class Main implements Runnable{
 	public Thread game; 
 	public  Window window;
 	public Renderer renderer;
+	public Shader shader;
 	public  final int WIDTH = 1280, HEIGHT = 760;
 
 	//=================================================================
@@ -47,6 +50,7 @@ public class Main implements Runnable{
 	public void init() {
 		System.out.print("Ilitlizeing game!");
 		window = new Window(WIDTH, HEIGHT, "GAME");
+		shader =  new Shader("/shaders/mainvertex.glsl", "/shaders/mainFragment.glsl");
 		renderer = new Renderer();
 		
 		window.setBackGroundColor(1.0f, 0, 0); // this set the background in red for testing 
