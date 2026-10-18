@@ -5,9 +5,14 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 
+import java.nio.FloatBuffer;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.io.IOException;
+
+import org.lwjgl.system.MemoryUtil;
+
+import engine.maths.Matrix4f;
 
 public class ShaderProgram {
     private String vertexSource = "";
@@ -74,6 +79,18 @@ public class ShaderProgram {
         int vertexMovementLocation = glGetUniformLocation(this.programHandle, "offset");
         glUniform2f(vertexMovementLocation, xValue, yValue);
         return;
+    }
+
+    // Added for the isometric camera: sends a 4x4 matrix to a "uniform mat4 <name>" in the shader.
+    // Same approach as Farran's Shader.setUniform(String, Matrix4f): copy the matrix's float
+    // array into a native buffer, upload it with the transpose flag set (Matrix4f stores its
+    // values row by row, OpenGL wants column by column), then free the buffer.
+    public void SetMatrix(String name, Matrix4f value) {
+        int location = glGetUniformLocation(this.programHandle, name);
+        FloatBuffer buffer = MemoryUtil.memAllocFloat(Matrix4f.SIZE * Matrix4f.SIZE);
+        buffer.put(value.getAll()).flip();
+        glUniformMatrix4fv(location, true, buffer);
+        MemoryUtil.memFree(buffer);
     }
 
     public void Use() {
