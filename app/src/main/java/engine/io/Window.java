@@ -6,6 +6,12 @@ import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 
+import engine.maths.*;
+
+//import org.joml.Vector3f; // JOML version — uncomment this + comment out the import engine.maths.*; import above to swap
+
+
+
 public class Window {
 	
 	private int width, height; // var need for how window size display
@@ -15,7 +21,7 @@ public class Window {
 	public static long time; // time variable 
 	
 	public Input input;
-	private float backgroundR, backgroundG, backgroundB;
+	private Vector3f background = new Vector3f(0, 0, 0);
 	
 	private GLFWWindowSizeCallback sizeCallback;
 	
@@ -103,7 +109,15 @@ public class Window {
 			Resized = false ;
 		}
 		
-		GL11.glClearColor( backgroundR, backgroundG, backgroundB, 1.0f);
+		GL11.glClearColor( background.getX(), background.getY(), background.getZ(), 1.0f);
+		
+		//=======================================================================================================================================================================================
+		// JOML version (JOML uses public fields, not getters) — uncomment once swapped:
+		// GL11.glClearColor( background.x, background.y, background.z, 1.0f);
+		
+		//=======================================================================================================================================================================================
+
+		
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT );
 		GLFW.glfwPollEvents(); // this gets request call form the window 
 		
@@ -134,9 +148,7 @@ public class Window {
 	//================================================================
 	
 	public void setBackGroundColor(float r, float g, float b) {
-		backgroundR = r;
-		backgroundG = g;
-		backgroundB = b;
+		background.set(r, g, b);
 	}
 
 	//================================================================
