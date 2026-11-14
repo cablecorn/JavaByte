@@ -37,6 +37,7 @@ public class Main implements Runnable{
 	public Renderer renderer;
 	public Shader shader;
 	public  final int WIDTH = 1280, HEIGHT = 760;
+	public long lastTime = 0;
 
 	//=================================================================
 		/*
@@ -72,87 +73,6 @@ public class Main implements Runnable{
 //	        		0, 1 ,2,
 //	        		0, 3, 2 // draws the second triangle from point 0 to 3 to 2
 	
-	
-	
-	
-	//code below is for cube testing 
-	
-	
-//	public Mesh mesh = new Mesh(new Vertex[] {
-//			//Back face
-//			new Vertex(new Vector3f(-0.5f,  0.5f, -0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f, -0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f, -0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Front face
-//			new Vertex(new Vector3f(-0.5f,  0.5f,  0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f,  0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f,  0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Right face
-//			new Vertex(new Vector3f( 0.5f,  0.5f, -0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f,  0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Left face
-//			new Vertex(new Vector3f(-0.5f,  0.5f, -0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f,  0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f(-0.5f,  0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Top face
-//			new Vertex(new Vector3f(-0.5f,  0.5f,  0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f,  0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f, -0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Bottom face
-//			new Vertex(new Vector3f(-0.5f, -0.5f,  0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f, -0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//	}, new int[] {
-//			//Back face
-//			0, 1, 3,	
-//			3, 1, 2,	
-//			
-//			//Front face
-//			4, 5, 7,
-//			7, 5, 6,
-//			
-//			//Right face
-//			8, 9, 11,
-//			11, 9, 10,
-//			
-//			//Left face
-//			12, 13, 15,
-//			15, 13, 14,
-//			
-//			//Top face
-//			16, 17, 19,
-//			19, 17, 18,
-//			
-//			//Bottom face
-//			20, 21, 23,
-//			23, 21, 22
-//	        }, new Material("/textures/gamemenu.jpg")
-//	    );
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/*
 	 * LOADED MODEL (active) — the scene setup. Compare it with the commented-out
 	 * lines to see what changed:
@@ -173,15 +93,14 @@ public class Main implements Runnable{
 	 * The commented-out "objects" array below was a stress test that drew 500
 	 * copies of one mesh at random positions to check multi-object rendering.
 	 */
-//	public Mesh mesh = ModelLoader.loadModel("resources/models/dragon.obj", "/textures/gamemenu.jpg");
-	public Mesh[] meshes = ModelLoader.loadModel("src/main/resources/models/model.gltf", "src/main/resources/textures");
+
+	public Mesh[] meshes = ModelLoader.loadModel("src/main/resources/models/stage/board.obj", "/textures/checker.png");
 	
-//	public GameObject[] objects = new GameObject[500];    // only for testing multi render
+	// CJ Added 11/7/26 -> new Mesh object to load the new sphere object named "dot.obj"
+	public Mesh[] dotMeshes = ModelLoader.loadModel("src/main/resources/models/stage/dot.obj", "/textures/dot.png");	
+	public GameObject[] dots = new GameObject[64];
 	
-//	public GameObject object = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), mesh);  // for single texture
-	
-	public GameObject object = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), meshes);
-	
+	public GameObject stage = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), meshes);
 	public Camera camera = new Camera(new Vector3f(0, 0, 1),new Vector3f(0, 0, 0));
 	
 	
@@ -230,7 +149,25 @@ public class Main implements Runnable{
 		for (Mesh m : meshes) m.create();
 		shader.create();
 
+		lastTime = System.nanoTime();
 		
+
+		// Variable to make the dots smaller and a variable to adjust square size
+		float squareSize = 2.0f;
+		float dotScale = 0.6f;
+		// CJ Added 11/7/26 -> Initialization of the dot, note MUST be after shader.create()
+		for(Mesh m : dotMeshes) m.create();
+		int n = 0;
+		// hardocded values for loop index, the size of the board is 8x8 but can be updated inside of board.obj
+		for (int row = 0; row < 8; row++)
+		{
+			for ( int col = 0; col < 8; col++)
+			{
+				// The math here works on hopes and dreams,. this took so long to figure out but the dots are now centered on my grid
+				dots[n++] = new GameObject(new Vector3f((col - 3.5f) * squareSize, 0.5f, (row - 3.5f) * squareSize), new Vector3f(0, 0, 0), new Vector3f(dotScale, dotScale , dotScale), dotMeshes);			}
+		}
+
+
 		//multi objects
 //		objects[0] = object;
 //		for (int i = 0; i < objects.length; i++) {
@@ -272,10 +209,49 @@ public class Main implements Runnable{
 	 */
 	
 	private void update() {
+		long now = System.nanoTime();
+		float deltaTime = (now - lastTime) / 1_000_000_000f;
+		lastTime = now;
+		float speed = 4f;
+		
+		int forward = 0;
+		int sideways = 0;
+
+		if (Input.isKeyDown(GLFW.GLFW_KEY_W)) {
+			forward++;
+		}
+
+		if (Input.isKeyDown(GLFW.GLFW_KEY_S)) {
+			forward--;
+		}
+
+		if (Input.isKeyDown(GLFW.GLFW_KEY_D)) {
+			sideways++;
+		}
+
+		if (Input.isKeyDown(GLFW.GLFW_KEY_A)) {
+			sideways--;
+		}
+
+		float moveX = camera.walkUp().getX() * forward + camera.walkRight().getX() * sideways;
+		float moveY = 0;
+		float moveZ = camera.walkUp().getZ() * forward + camera.walkRight().getZ() * sideways;
+
+		float length = (float) Math.sqrt(moveX * moveX + moveZ * moveZ);
+		if (length > 0) {
+			moveX /= length;
+			moveZ /= length;
+		}
+
+		moveX = moveX * speed * deltaTime;
+		moveZ = moveZ * speed * deltaTime;
+
+		stage.move(moveX, moveY, moveZ);
+
 		//System.out.print("update game!");
 		window.update(); // polls input/window events and clears the screen (does NOT draw anything)
-		//camera.update(); // first person 
-		camera.update(object); // third person
+
+		camera.update(stage); // third person
 		if(Input.isButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
 			System.out.println( "X: " + Input.getMouseX() + ", Y:" + Input.getMouseY()); // test print: shows the mouse position while the left button is held
 
@@ -301,7 +277,10 @@ public class Main implements Runnable{
 //			renderer.renderMesh(objects[i], camera);
 //		}
 	
-		renderer.renderMesh(object, camera);
+		renderer.renderMesh(stage, camera);
+
+		// CJ Added 11/7/26 -> render for the sphere 
+		for (GameObject dot : dots) renderer.renderMesh(dot, camera);
 		
 		//System.out.print("render game!");
 		window.swapBuffers(); // shows the finished frame and starts the next one
@@ -320,8 +299,9 @@ public class Main implements Runnable{
 
 		window.destory();
 		for (Mesh m : meshes) m.destroy();
+		// CJ Added 11/726 -> Destroy function for the dotMesh
+		for ( Mesh m : dotMeshes) m.destroy();
 		shader.destroy();
-
 	}
 	
 	/*
