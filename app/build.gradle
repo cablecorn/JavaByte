@@ -23,7 +23,7 @@ dependencies {
     implementation libs.guava
 
    project.ext.lwjglVersion = "3.4.3"
-   project.ext.lwjglNatives = "natives-linux"
+   project.ext.lwjglNatives = "natives-windows"
 
    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 

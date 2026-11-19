@@ -174,13 +174,17 @@ public class Main implements Runnable{
 	 * copies of one mesh at random positions to check multi-object rendering.
 	 */
 //	public Mesh mesh = ModelLoader.loadModel("resources/models/dragon.obj", "/textures/gamemenu.jpg");
-	public Mesh[] meshes = ModelLoader.loadModel("src/main/resources/models/model.gltf", "src/main/resources/textures");
-	
+	public Mesh[] meshes = ModelLoader.loadModel("src/main/resources/models/board.obj", "/textures/checker.png");	
 //	public GameObject[] objects = new GameObject[500];    // only for testing multi render
 	
 //	public GameObject object = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), mesh);  // for single texture
 	
 	public GameObject object = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), meshes);
+	
+	// CJ Added 11/7/26 -> new Mesh object to load the new sphere object named "dot.obj"
+	public Mesh[] dotMeshes = ModelLoader.loadModel("src/main/resources/models/dot.obj", "/textures/dot.png");	
+	public GameObject[] dots = new GameObject[64];
+
 	
 	public Camera camera = new Camera(new Vector3f(0, 0, 1),new Vector3f(0, 0, 0));
 	
@@ -229,6 +233,21 @@ public class Main implements Runnable{
 		
 		for (Mesh m : meshes) m.create();
 		shader.create();
+		
+		// Variable to make the dots smaller and a variable to adjust square size
+		float squareSize = 2.0f;
+		float dotScale = 0.6f;
+		// CJ Added 11/7/26 -> Initialization of the dot, note MUST be after shader.create()
+		for(Mesh m : dotMeshes) m.create();
+		int n = 0;
+		// hardocded values for loop index, the size of the board is 8x8 but can be updated inside of board.obj
+		for (int row = 0; row < 8; row++)
+		{
+			for ( int col = 0; col < 8; col++)
+			{
+				// The math here works on hopes and dreams,. this took so long to figure out but the dots are now centered on my grid
+				dots[n++] = new GameObject(new Vector3f((col - 3.5f) * squareSize / dotScale, 0.5f, (row - 3.5f) * squareSize / dotScale), new Vector3f(0, 0, 0), new Vector3f(dotScale, dotScale , dotScale), dotMeshes);			}
+		}
 
 		
 		//multi objects
@@ -303,6 +322,9 @@ public class Main implements Runnable{
 	
 		renderer.renderMesh(object, camera);
 		
+		// CJ Added 11/7/26 -> render for the sphere 
+		for (GameObject dot : dots) renderer.renderMesh(dot, camera);
+		
 		//System.out.print("render game!");
 		window.swapBuffers(); // shows the finished frame and starts the next one
 	}
@@ -320,6 +342,8 @@ public class Main implements Runnable{
 
 		window.destory();
 		for (Mesh m : meshes) m.destroy();
+		// CJ Added 11/726 -> Destroy function for the dotMesh
+		for ( Mesh m : dotMeshes) m.destroy();
 		shader.destroy();
 
 	}
