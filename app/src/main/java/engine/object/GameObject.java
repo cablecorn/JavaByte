@@ -196,6 +196,11 @@ public class GameObject {
 		this.position.setZ(this.position.getZ() + z);
 	}
 
+	public void bounce(float y) {
+		this.position.setY(y);
+		System.out.println(this.position.getY());
+	}
+
 	/** GETTER — @return the live position vector (changes to it affect this object). */
 	public Vector3f getPosition() {
 		return position;

@@ -38,6 +38,12 @@ public class Main implements Runnable{
 	public Shader shader;
 	public  final int WIDTH = 1280, HEIGHT = 760;
 	public long lastTime = 0;
+	private static final float MODEL_YAW_OFFSET = 180;
+
+	private float acornTime = 0f;
+	private static final float ACORN_BASE_Y    = 0.5f;  // resting height
+	private static final float ACORN_AMPLITUDE = 0.10f; // how far it bobs up/down
+	private static final float ACORN_SPEED     = 2f;    // bob speed (radians/sec)
 
 	//=================================================================
 		/*
@@ -97,12 +103,12 @@ public class Main implements Runnable{
 	public Mesh[] meshes = ModelLoader.loadModel("src/main/resources/models/stage/board.obj", "/textures/checker.png");
 	
 	// CJ Added 11/7/26 -> new Mesh object to load the new sphere object named "dot.obj"
-	public Mesh[] dotMeshes = ModelLoader.loadModel("src/main/resources/models/stage/dot.obj", "/textures/dot.png");
-	public Mesh[] playerMesh = ModelLoader.loadModel("src/main/resources/models/stage/dot.obj", "/textures/dot.png");
+	public Mesh[] acornMeshes = ModelLoader.loadModel("src/main/resources/models/Acorns/scene.gltf", "/textures/scrats_acorn_prop_mat_baseColor.jpeg");
+	public Mesh[] playerMesh = ModelLoader.loadModel("src/main/resources/models/player/scene.gltf", "/textures/material_0_baseColor.png");
 
-	public GameObject[] dots = new GameObject[64];
+	public GameObject[] acorns = new GameObject[64];
 	public GameObject stage = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), meshes);
-	public GameObject player = new GameObject(new Vector3f(0, 1, 0), new Vector3f(0, 0, 0), new Vector3f(2, 2, 2), playerMesh);
+	public GameObject player = new GameObject(new Vector3f(0, 1, 0), new Vector3f(0, 0, 0), new Vector3f(1.5f, 1.5f, 1.5f), playerMesh);
 	public Camera camera = new Camera(new Vector3f(0, 0, 1),new Vector3f(0, 0, 0));
 	
 	
@@ -155,19 +161,19 @@ public class Main implements Runnable{
 		lastTime = System.nanoTime();
 		
 
-		// Variable to make the dots smaller and a variable to adjust square size
+		// Variable to make the acorns smaller and a variable to adjust square size
 		float squareSize = 2.0f;
-		float dotScale = 0.6f;
-		// CJ Added 11/7/26 -> Initialization of the dot, note MUST be after shader.create()
-		for(Mesh m : dotMeshes) m.create();
+		float acornScale = 0.45f;
+		// CJ Added 11/7/26 -> Initialization of the acorn, note MUST be after shader.create()
+		for(Mesh m : acornMeshes) m.create();
 		int n = 0;
 		// hardocded values for loop index, the size of the board is 8x8 but can be updated inside of board.obj
 		for (int row = 0; row < 8; row++)
 		{
 			for ( int col = 0; col < 8; col++)
 			{
-				// The math here works on hopes and dreams,. this took so long to figure out but the dots are now centered on my grid
-				dots[n++] = new GameObject(new Vector3f((col - 3.5f) * squareSize, 0.5f, (row - 3.5f) * squareSize), new Vector3f(0, 0, 0), new Vector3f(dotScale, dotScale , dotScale), dotMeshes);			}
+				// The math here works on hopes and dreams,. this took so long to figure out but the acorns are now centered on my grid
+				acorns[n++] = new GameObject(new Vector3f((col - 3.5f) * squareSize, 0.5f, (row - 3.5f) * squareSize), new Vector3f(0, 0, -45), new Vector3f(acornScale, acornScale , acornScale), acornMeshes);			}
 		}
 
 
@@ -216,7 +222,7 @@ public class Main implements Runnable{
 		float deltaTime = (now - lastTime) / 1_000_000_000f;
 		lastTime = now;
 		float speed = 5f;
-		
+
 		int forward = 0;
 		int sideways = 0;
 
@@ -242,14 +248,24 @@ public class Main implements Runnable{
 
 		float length = (float) Math.sqrt(moveX * moveX + moveZ * moveZ);
 		if (length > 0) {
-			moveX /= length;
-			moveZ /= length;
+    		moveX /= length;
+    		moveZ /= length;
+
+    		// face the direction of travel (0° = facing +Z)
+    		float yaw = (float) Math.toDegrees(Math.atan2(-moveX, moveZ)) + MODEL_YAW_OFFSET;
+			player.getRotation().setY(yaw);
 		}
 
 		moveX = moveX * speed * deltaTime;
 		moveZ = moveZ * speed * deltaTime;
 
 		player.move(moveX, moveY, moveZ);
+
+		// Code snippet to give acorns floating feeling
+		acornTime += deltaTime;
+		for (int i = 0; i < acorns.length; i++) {
+    		acorns[i].bounce(ACORN_BASE_Y + ACORN_AMPLITUDE * (float) Math.sin(acornTime * ACORN_SPEED));
+		}
 
 		//System.out.print("update game!");
 		window.update(); // polls input/window events and clears the screen (does NOT draw anything)
@@ -284,7 +300,7 @@ public class Main implements Runnable{
 		renderer.renderMesh(player, camera);
 
 		// CJ Added 11/7/26 -> render for the sphere 
-		for (GameObject dot : dots) renderer.renderMesh(dot, camera);
+		for (GameObject acorn : acorns) renderer.renderMesh(acorn, camera);
 		
 		//System.out.print("render game!");
 		window.swapBuffers(); // shows the finished frame and starts the next one
@@ -304,8 +320,8 @@ public class Main implements Runnable{
 		window.destory();
 		for (Mesh m : meshes) m.destroy();
 		for (Mesh m : playerMesh) m.destroy();
-		// CJ Added 11/726 -> Destroy function for the dotMesh
-		for ( Mesh m : dotMeshes) m.destroy();
+		// CJ Added 11/726 -> Destroy function for the acornMesh
+		for ( Mesh m : acornMeshes) m.destroy();
 		shader.destroy();
 	}
 	
