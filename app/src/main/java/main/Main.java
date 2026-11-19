@@ -97,10 +97,12 @@ public class Main implements Runnable{
 	public Mesh[] meshes = ModelLoader.loadModel("src/main/resources/models/stage/board.obj", "/textures/checker.png");
 	
 	// CJ Added 11/7/26 -> new Mesh object to load the new sphere object named "dot.obj"
-	public Mesh[] dotMeshes = ModelLoader.loadModel("src/main/resources/models/stage/dot.obj", "/textures/dot.png");	
+	public Mesh[] dotMeshes = ModelLoader.loadModel("src/main/resources/models/stage/dot.obj", "/textures/dot.png");
+	public Mesh[] playerMesh = ModelLoader.loadModel("src/main/resources/models/stage/dot.obj", "/textures/dot.png");
+
 	public GameObject[] dots = new GameObject[64];
-	
 	public GameObject stage = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), meshes);
+	public GameObject player = new GameObject(new Vector3f(0, 1, 0), new Vector3f(0, 0, 0), new Vector3f(2, 2, 2), playerMesh);
 	public Camera camera = new Camera(new Vector3f(0, 0, 1),new Vector3f(0, 0, 0));
 	
 	
@@ -142,11 +144,12 @@ public class Main implements Runnable{
 			);
 		renderer = new Renderer(window, shader);
 
-		window.setBackGroundColor(1.0f, 0, 0); // sets the background to red for testing 
+		window.setBackGroundColor(0, 0, 0); // sets background 
 		window.create(); // creates the window and the OpenGL context
 //		mesh.create();  //creates the mesh   // use this for single
 		
 		for (Mesh m : meshes) m.create();
+		for(Mesh m : playerMesh) m.create();
 		shader.create();
 
 		lastTime = System.nanoTime();
@@ -212,7 +215,7 @@ public class Main implements Runnable{
 		long now = System.nanoTime();
 		float deltaTime = (now - lastTime) / 1_000_000_000f;
 		lastTime = now;
-		float speed = 4f;
+		float speed = 5f;
 		
 		int forward = 0;
 		int sideways = 0;
@@ -246,12 +249,12 @@ public class Main implements Runnable{
 		moveX = moveX * speed * deltaTime;
 		moveZ = moveZ * speed * deltaTime;
 
-		stage.move(moveX, moveY, moveZ);
+		player.move(moveX, moveY, moveZ);
 
 		//System.out.print("update game!");
 		window.update(); // polls input/window events and clears the screen (does NOT draw anything)
 
-		camera.update(stage); // third person
+		camera.update(player); // third person
 		if(Input.isButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
 			System.out.println( "X: " + Input.getMouseX() + ", Y:" + Input.getMouseY()); // test print: shows the mouse position while the left button is held
 
@@ -278,6 +281,7 @@ public class Main implements Runnable{
 //		}
 	
 		renderer.renderMesh(stage, camera);
+		renderer.renderMesh(player, camera);
 
 		// CJ Added 11/7/26 -> render for the sphere 
 		for (GameObject dot : dots) renderer.renderMesh(dot, camera);
@@ -299,6 +303,7 @@ public class Main implements Runnable{
 
 		window.destory();
 		for (Mesh m : meshes) m.destroy();
+		for (Mesh m : playerMesh) m.destroy();
 		// CJ Added 11/726 -> Destroy function for the dotMesh
 		for ( Mesh m : dotMeshes) m.destroy();
 		shader.destroy();
