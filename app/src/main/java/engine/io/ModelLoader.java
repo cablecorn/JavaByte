@@ -178,9 +178,15 @@ public class ModelLoader {
 	 *     is the glass one, and add it to the list.
 	 */
 	public static Mesh[] loadModel(String filePath, String fallbackTexture) {
-		AIScene scene = Assimp.aiImportFile(filePath,
-				Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_Triangulate
-				| Assimp.aiProcess_GenNormals | Assimp.aiProcess_PreTransformVertices);
+		int flags = Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_Triangulate
+        | Assimp.aiProcess_GenNormals | Assimp.aiProcess_PreTransformVertices;
+
+		// glTF UVs get flipped by Assimp; undo that. Leave .obj files alone.
+		if (filePath.endsWith(".gltf") || filePath.endsWith(".glb")) {
+    		flags |= Assimp.aiProcess_FlipUVs;
+		}
+
+		AIScene scene = Assimp.aiImportFile(filePath, flags);
 
 		if (scene == null) {
 			System.err.println("Couldn't load model at " + filePath + ": " + Assimp.aiGetErrorString());

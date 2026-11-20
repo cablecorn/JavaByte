@@ -190,8 +190,15 @@ public class GameObject {
 	 * below, commented out. Uncomment it to make the model drift away from
 	 * the camera. Per-object game logic (movement, animation) would go here.
 	 */
-	public void update() {
-//		position.setZ(position.getZ() - 0.05f);
+	public void move(float x, float y, float z) {
+		this.position.setX(this.position.getX() + x);
+		this.position.setY(this.position.getY() + y);
+		this.position.setZ(this.position.getZ() + z);
+	}
+
+	public void bounce(float y) {
+		this.position.setY(y);
+		System.out.println(this.position.getY());
 	}
 
 	/** GETTER — @return the live position vector (changes to it affect this object). */

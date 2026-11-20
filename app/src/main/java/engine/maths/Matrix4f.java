@@ -135,7 +135,7 @@ public class Matrix4f {
 		
 		Matrix4f rotationMatrix = Matrix4f.multiply(rotXMatrix, Matrix4f.multiply(rotYMatrix, rotZMatrix));
 		
-		result = Matrix4f.multiply(translationMatrix, Matrix4f.multiply(rotationMatrix, scaleMatrix));
+		result = Matrix4f.multiply(scaleMatrix, Matrix4f.multiply(rotationMatrix, translationMatrix));
 		
 		return result;
 	}
@@ -167,6 +167,19 @@ public class Matrix4f {
 		result.set(3, 2, -((2 * far * near) / range));
 		result.set(3, 3, 0.0f);
 		
+		return result;
+	}
+
+	public static Matrix4f orthographic(float left, float right, float bottom, float top, float near, float far) {
+		Matrix4f result = Matrix4f.identity();
+
+		result.set(0, 0, (2 / (right - left)));
+		result.set(1, 1, (2 / (top - bottom)));
+		result.set(2, 2, (-2 / (far - near)));
+		result.set(3, 0, -((right + left) / (right - left)));
+		result.set(3, 1, -((top + bottom) / (top - bottom)));
+		result.set(3, 2, -((far + near) / (far - near)));
+
 		return result;
 	}
 	

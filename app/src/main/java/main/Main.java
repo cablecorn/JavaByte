@@ -14,6 +14,7 @@ import engine.maths.Vector2f;
 import engine.maths.Vector3f;
 import engine.object.Camera;
 import engine.object.GameObject;
+import org.lwjgl.opengl.GL11; // New import required for the overlay
 
 //import org.joml.Vector3f; // JOML version — uncomment this + comment out the line above to swap
 
@@ -37,6 +38,45 @@ public class Main implements Runnable{
 	public Renderer renderer;
 	public Shader shader;
 	public  final int WIDTH = 1280, HEIGHT = 760;
+	public long lastTime = 0;
+	private static final float MODEL_YAW_OFFSET = 180;
+
+	private float acornTime = 0f;
+	private static final float ACORN_BASE_Y    = 0.5f;  // resting height
+	private static final float ACORN_AMPLITUDE = 0.10f; // how far it bobs up/down
+	private static final float ACORN_SPEED     = 2f;    // bob speed (radians/sec)
+	
+	/* Added by CJ 11/19/26
+	 * These fields are required for the new HUD elements
+	 * Since the camera is fixed, we can put flat digit objects inside of the 3D world
+	 * This uses a second shader with no camera math, so its position will be fixed
+	 */
+	public Shader hudShader;
+	public Renderer hudRenderer;
+	public Mesh[][] digitMeshes = new Mesh[10][];
+	public GameObject[] tensDigits = new GameObject[10];
+	public GameObject[] unitsDigits = new GameObject[10];
+	public int score = 0; 
+	
+	/*
+	 * Added by CJ 11/19/26
+	 * Similar logic to the score itself, adding a flat object for text to explicitly
+	 * say the number you are looking at is the score 
+	 */
+	
+	public Mesh[] labelMeshes;
+	public GameObject scoreLabel;
+	
+	/*
+	 * Added by CJ 11/19/26
+	 * These fields are for collecting the acorns
+	 * The pickupradius is half of a square, so it pick up upon entering a square
+	 * Collected remember which acorns are gone
+	 */
+	
+	public boolean[] collected = new boolean[64];
+	private static final float PICKUP_RADIUS = 0.9f; // Modify this to change the pickup range 
+	
 
 	//=================================================================
 		/*
@@ -72,87 +112,6 @@ public class Main implements Runnable{
 //	        		0, 1 ,2,
 //	        		0, 3, 2 // draws the second triangle from point 0 to 3 to 2
 	
-	
-	
-	
-	//code below is for cube testing 
-	
-	
-//	public Mesh mesh = new Mesh(new Vertex[] {
-//			//Back face
-//			new Vertex(new Vector3f(-0.5f,  0.5f, -0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f, -0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f, -0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Front face
-//			new Vertex(new Vector3f(-0.5f,  0.5f,  0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f,  0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f,  0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Right face
-//			new Vertex(new Vector3f( 0.5f,  0.5f, -0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f,  0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Left face
-//			new Vertex(new Vector3f(-0.5f,  0.5f, -0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f,  0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f(-0.5f,  0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Top face
-//			new Vertex(new Vector3f(-0.5f,  0.5f,  0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f,  0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f, -0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f,  0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//			
-//			//Bottom face
-//			new Vertex(new Vector3f(-0.5f, -0.5f,  0.5f), new Vector2f(0.0f, 0.0f)),
-//			new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f, -0.5f), new Vector2f(1.0f, 1.0f)),
-//			new Vertex(new Vector3f( 0.5f, -0.5f,  0.5f), new Vector2f(1.0f, 0.0f)),
-//	}, new int[] {
-//			//Back face
-//			0, 1, 3,	
-//			3, 1, 2,	
-//			
-//			//Front face
-//			4, 5, 7,
-//			7, 5, 6,
-//			
-//			//Right face
-//			8, 9, 11,
-//			11, 9, 10,
-//			
-//			//Left face
-//			12, 13, 15,
-//			15, 13, 14,
-//			
-//			//Top face
-//			16, 17, 19,
-//			19, 17, 18,
-//			
-//			//Bottom face
-//			20, 21, 23,
-//			23, 21, 22
-//	        }, new Material("/textures/gamemenu.jpg")
-//	    );
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/*
 	 * LOADED MODEL (active) — the scene setup. Compare it with the commented-out
 	 * lines to see what changed:
@@ -173,19 +132,16 @@ public class Main implements Runnable{
 	 * The commented-out "objects" array below was a stress test that drew 500
 	 * copies of one mesh at random positions to check multi-object rendering.
 	 */
-//	public Mesh mesh = ModelLoader.loadModel("resources/models/dragon.obj", "/textures/gamemenu.jpg");
-	public Mesh[] meshes = ModelLoader.loadModel("src/main/resources/models/board.obj", "/textures/checker.png");	
-//	public GameObject[] objects = new GameObject[500];    // only for testing multi render
-	
-//	public GameObject object = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), mesh);  // for single texture
-	
-	public GameObject object = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), meshes);
+
+	public Mesh[] meshes = ModelLoader.loadModel("src/main/resources/models/stage/board.obj", "/textures/checker.png");
 	
 	// CJ Added 11/7/26 -> new Mesh object to load the new sphere object named "dot.obj"
-	public Mesh[] dotMeshes = ModelLoader.loadModel("src/main/resources/models/dot.obj", "/textures/dot.png");	
-	public GameObject[] dots = new GameObject[64];
+	public Mesh[] acornMeshes = ModelLoader.loadModel("src/main/resources/models/Acorns/scene.gltf", "/textures/scrats_acorn_prop_mat_baseColor.jpeg");
+	public Mesh[] playerMesh = ModelLoader.loadModel("src/main/resources/models/player/scene.gltf", "/textures/material_0_baseColor.png");
 
-	
+	public GameObject[] acorns = new GameObject[64];
+	public GameObject stage = new GameObject(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), meshes);
+	public GameObject player = new GameObject(new Vector3f(0, 1, 0), new Vector3f(0, 0, 0), new Vector3f(1.5f, 1.5f, 1.5f), playerMesh);
 	public Camera camera = new Camera(new Vector3f(0, 0, 1),new Vector3f(0, 0, 0));
 	
 	
@@ -227,29 +183,61 @@ public class Main implements Runnable{
 			);
 		renderer = new Renderer(window, shader);
 
-		window.setBackGroundColor(1.0f, 0, 0); // sets the background to red for testing 
+		window.setBackGroundColor(0, 0, 0); // sets background 
 		window.create(); // creates the window and the OpenGL context
 //		mesh.create();  //creates the mesh   // use this for single
 		
 		for (Mesh m : meshes) m.create();
+		for(Mesh m : playerMesh) m.create();
 		shader.create();
+
+		lastTime = System.nanoTime();
 		
-		// Variable to make the dots smaller and a variable to adjust square size
+		// Implemented by CJ 11/19/26 -> Initializing hud element
+		/*
+		 * Screen positions run from -1 (left) to 1 (right) and from -1 (bottom) to 1 (top).
+		 * So -0.85f, 0.88f is near the top-left. 
+		 * The tens digit sits at -0.85f and the ones digit at -0.77f. Keep the scale at (1, 1, 1)
+		 * Modify the digit locations to your discretion :)
+		 */
+		hudShader = new Shader("/shaders/hudVertex.glsl", "/shaders/mainFragment.glsl");
+		hudRenderer = new Renderer(window, hudShader);
+		hudShader.create();
+		
+		/*
+		 * Same logic here for the label that says "score"
+		 * create the label 
+		 * Also to mention, the values for the locations of the vertex are just from messing around
+		 */
+		
+		float hudX = -0.95f;
+		labelMeshes = ModelLoader.loadModel("src/main/resources/models/hud_label.obj", "/textures/score_label.png");
+		for (Mesh m : labelMeshes) m.create();
+		scoreLabel = new GameObject(new Vector3f(hudX + 0.186f, 0.88f, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), labelMeshes);
+		for(int d = 0; d < 10; d++) {
+			digitMeshes[d] = ModelLoader.loadModel("src/main/resources/models/hud_quad.obj", "/textures/digit_" + d + ".png");
+			for(Mesh m : digitMeshes[d]) m.create();
+			tensDigits[d]  = new GameObject(new Vector3f(hudX + 0.434f, 0.88f, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), digitMeshes[d]);
+		    unitsDigits[d] = new GameObject(new Vector3f(hudX + 0.514f, 0.88f, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), digitMeshes[d]);
+		}
+		
+
+		// Variable to make the acorns smaller and a variable to adjust square size
 		float squareSize = 2.0f;
-		float dotScale = 0.6f;
-		// CJ Added 11/7/26 -> Initialization of the dot, note MUST be after shader.create()
-		for(Mesh m : dotMeshes) m.create();
+		float acornScale = 0.45f;
+		// CJ Added 11/7/26 -> Initialization of the acorn, note MUST be after shader.create()
+		for(Mesh m : acornMeshes) m.create();
 		int n = 0;
 		// hardocded values for loop index, the size of the board is 8x8 but can be updated inside of board.obj
 		for (int row = 0; row < 8; row++)
 		{
 			for ( int col = 0; col < 8; col++)
 			{
-				// The math here works on hopes and dreams,. this took so long to figure out but the dots are now centered on my grid
-				dots[n++] = new GameObject(new Vector3f((col - 3.5f) * squareSize / dotScale, 0.5f, (row - 3.5f) * squareSize / dotScale), new Vector3f(0, 0, 0), new Vector3f(dotScale, dotScale , dotScale), dotMeshes);			}
+				// The math here works on hopes and dreams,. this took so long to figure out but the acorns are now centered on my grid
+				acorns[n++] = new GameObject(new Vector3f((col - 3.5f) * squareSize, 0.5f, (row - 3.5f) * squareSize), new Vector3f(0, 0, -45), new Vector3f(acornScale, acornScale , acornScale), acornMeshes);			}
 		}
 
-		
+
 		//multi objects
 //		objects[0] = object;
 //		for (int i = 0; i < objects.length; i++) {
@@ -291,10 +279,70 @@ public class Main implements Runnable{
 	 */
 	
 	private void update() {
+		long now = System.nanoTime();
+		float deltaTime = (now - lastTime) / 1_000_000_000f;
+		lastTime = now;
+		float speed = 5f;
+
+		int forward = 0;
+		int sideways = 0;
+
+		if (Input.isKeyDown(GLFW.GLFW_KEY_W)) {
+			forward++;
+		}
+
+		if (Input.isKeyDown(GLFW.GLFW_KEY_S)) {
+			forward--;
+		}
+
+		if (Input.isKeyDown(GLFW.GLFW_KEY_D)) {
+			sideways++;
+		}
+
+		if (Input.isKeyDown(GLFW.GLFW_KEY_A)) {
+			sideways--;
+		}
+
+		float moveX = camera.walkUp().getX() * forward + camera.walkRight().getX() * sideways;
+		float moveY = 0;
+		float moveZ = camera.walkUp().getZ() * forward + camera.walkRight().getZ() * sideways;
+
+		float length = (float) Math.sqrt(moveX * moveX + moveZ * moveZ);
+		if (length > 0) {
+    		moveX /= length;
+    		moveZ /= length;
+
+    		// face the direction of travel (0° = facing +Z)
+    		float yaw = (float) Math.toDegrees(Math.atan2(-moveX, moveZ)) + MODEL_YAW_OFFSET;
+			player.getRotation().setY(yaw);
+		}
+
+		moveX = moveX * speed * deltaTime;
+		moveZ = moveZ * speed * deltaTime;
+
+		player.move(moveX, moveY, moveZ);
+		
+		for (int i = 0; i < acorns.length; i++) {
+		    if (collected[i]) continue;
+		    float dx = player.getPosition().getX() - acorns[i].getPosition().getX();
+		    float dz = player.getPosition().getZ() - acorns[i].getPosition().getZ();
+		    if (dx * dx + dz * dz < 4.0f) System.out.println("acorn " + i + "  dx=" + dx + "  dz=" + dz);
+		    if (dx * dx + dz * dz < PICKUP_RADIUS * PICKUP_RADIUS) {
+		        collected[i] = true;
+		        score++;
+		    }
+		}
+
+		// Code snippet to give acorns floating feeling
+		acornTime += deltaTime;
+		for (int i = 0; i < acorns.length; i++) {
+    		acorns[i].bounce(ACORN_BASE_Y + ACORN_AMPLITUDE * (float) Math.sin(acornTime * ACORN_SPEED));
+		}
+
 		//System.out.print("update game!");
 		window.update(); // polls input/window events and clears the screen (does NOT draw anything)
-		//camera.update(); // first person 
-		camera.update(object); // third person
+
+		camera.update(player); // third person
 		if(Input.isButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
 			System.out.println( "X: " + Input.getMouseX() + ", Y:" + Input.getMouseY()); // test print: shows the mouse position while the left button is held
 
@@ -320,10 +368,23 @@ public class Main implements Runnable{
 //			renderer.renderMesh(objects[i], camera);
 //		}
 	
-		renderer.renderMesh(object, camera);
-		
+		renderer.renderMesh(stage, camera);
+		renderer.renderMesh(player, camera);
+
 		// CJ Added 11/7/26 -> render for the sphere 
-		for (GameObject dot : dots) renderer.renderMesh(dot, camera);
+		// for (GameObject acorn : acorns) renderer.renderMesh(acorn, camera);
+		// Commented out above line to change the way acorns are drawn
+		for(int i = 0; i < acorns.length; i++) {
+			if(!collected[i]) renderer.renderMesh(acorns[i], camera);
+		}
+		
+		// CJ Added 11/119/26 -> render for the HUD
+		// Keep this before window.swapBuffers() if you are going to modify at all
+		// Clearing the depth buffer first makes the score draw over the stage
+		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+		hudRenderer.renderMesh(scoreLabel, camera);
+		if(score >= 10) hudRenderer.renderMesh(tensDigits[(score / 10) % 10], camera);
+		hudRenderer.renderMesh(unitsDigits[score % 10], camera);
 		
 		//System.out.print("render game!");
 		window.swapBuffers(); // shows the finished frame and starts the next one
@@ -342,10 +403,15 @@ public class Main implements Runnable{
 
 		window.destory();
 		for (Mesh m : meshes) m.destroy();
-		// CJ Added 11/726 -> Destroy function for the dotMesh
-		for ( Mesh m : dotMeshes) m.destroy();
+		for (Mesh m : playerMesh) m.destroy();
+		// CJ Added 11/726 -> Destroy function for the acornMesh
+		for ( Mesh m : acornMeshes) m.destroy();
 		shader.destroy();
-
+		
+		// CJ Added 11/19/26 -> Destroy the hud Mesh 
+		for(int d = 0; d < 10; d++) for (Mesh m : digitMeshes[d]) m.destroy();
+		hudShader.destroy();
+		for(Mesh m : labelMeshes) m.destroy();
 	}
 	
 	/*

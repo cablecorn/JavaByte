@@ -71,7 +71,7 @@ public class Window {
 		this.width = width; // "this" means the field of this object, not the parameter
 		this.height = height;
 		this.title = title;
-		projection = Matrix4f.projection(70.0f, (float) width/ (float) height, 0.1f, 1000.0f);
+		projection = Matrix4f.orthographic(10 * ((float)-width/height), 10 * ((float)width/height), -10, 10, -0.1f, 1000.0f);
 	}
 	//================================================================
 	/*

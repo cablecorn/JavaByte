@@ -1,8 +1,5 @@
 package engine.object;
 
-import org.lwjgl.glfw.GLFW;
-
-import engine.io.Input;
 import engine.maths.Vector3f;
 
 /*
@@ -31,7 +28,7 @@ public class Camera {
 	 *   oldMouse / newMouse = the mouse position last frame and this frame, so
 	 *                      the difference between them is how far it moved
 	 */
-	private float moveSpeed = 0.05f, mouseSensitivity = 0.15f, distance = 2.0f, horizontalAngle = 0, verticalAngle = 0;
+	private float moveSpeed = 0.05f, mouseSensitivity = 0.15f, distance = 50.0f, horizontalAngle = -45, verticalAngle = -35.264f;
 	private double oldMouseX = 0, oldMouseY = 0, newMouseX, newMouseY;
 
 	/*
@@ -43,49 +40,6 @@ public class Camera {
 		this.position = position;
 		this.rotation = rotation;
 	}
-	
-	
-	
-	/*
-	 * UPDATE (FIRST PERSON) — moves and turns the camera like a player's head.
-	 * Call once per frame.
-	 *
-	 * Movement: W, A, S, D move forward, left, back, and right, and Space and
-	 * Left Shift move up and down. Forward and sideways movement follow the
-	 * direction the camera is facing, so the code takes the sine and cosine of
-	 * the yaw (rotation.y) to split one step of moveSpeed into x and z parts.
-	 *
-	 * Turning: the mouse movement since last frame (dx, dy) is multiplied by
-	 * the sensitivity and added to the rotation. Both are negated, so moving
-	 * the mouse right turns the view right and moving it up looks up.
-	 *
-	 * Each movement creates a new position vector with Vector3f.add instead of
-	 * changing the old one in place.
-	 */
-	//first person
-	public void update() {
-		newMouseX = Input.getMouseX();
-		newMouseY = Input.getMouseY();
-		
-		float x = (float) Math.sin(Math.toRadians(rotation.getY())) * moveSpeed;
-		float z = (float) Math.cos(Math.toRadians(rotation.getY())) * moveSpeed;
-		
-		if (Input.isKeyDown(GLFW.GLFW_KEY_A)) position = Vector3f.add(position, new Vector3f(-z, 0, x));
-		if (Input.isKeyDown(GLFW.GLFW_KEY_D)) position = Vector3f.add(position, new Vector3f(z, 0, -x));
-		if (Input.isKeyDown(GLFW.GLFW_KEY_W)) position = Vector3f.add(position, new Vector3f(-x, 0, -z));
-		if (Input.isKeyDown(GLFW.GLFW_KEY_S)) position = Vector3f.add(position, new Vector3f(x, 0, z));
-		if (Input.isKeyDown(GLFW.GLFW_KEY_SPACE)) position = Vector3f.add(position, new Vector3f(0, moveSpeed, 0));
-		if (Input.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) position = Vector3f.add(position, new Vector3f(0, -moveSpeed, 0));
-		
-		float dx = (float) (newMouseX - oldMouseX);
-		float dy = (float) (newMouseY - oldMouseY);
-		
-		rotation = Vector3f.add(rotation, new Vector3f(-dy * mouseSensitivity, -dx * mouseSensitivity, 0));
-		
-		oldMouseX = newMouseX;
-		oldMouseY = newMouseY;
-	}
-	
 	
 	
 	
@@ -111,24 +65,10 @@ public class Camera {
 	//third person 
 	
 	public void update(GameObject object) {
-		newMouseX = Input.getMouseX();
-		newMouseY = Input.getMouseY();
 		
 		float dx = (float) (newMouseX - oldMouseX);
 		float dy = (float) (newMouseY - oldMouseY);
-		
-		if (Input.isButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-			verticalAngle -= dy * mouseSensitivity;
-			horizontalAngle += dx * mouseSensitivity;
-		}
-		if (Input.isButtonDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-			if (distance > 0) {
-				distance += dy * mouseSensitivity / 4;
-			} else {
-				distance = 0.1f;
-			}
-		}
-		
+			
 		float horizontalDistance = (float) (distance * Math.cos(Math.toRadians(verticalAngle)));
 		float verticalDistance = (float) (distance * Math.sin(Math.toRadians(verticalAngle)));
 		
@@ -143,6 +83,16 @@ public class Camera {
 		oldMouseY = newMouseY;
 	}
 
+	public Vector3f walkUp() {
+		Vector3f up = new Vector3f((float)-Math.sin(Math.toRadians(-horizontalAngle)), 0, (float)-Math.cos(Math.toRadians(-horizontalAngle)));
+		return up;
+	}
+
+
+	public Vector3f walkRight() {
+		Vector3f right = new Vector3f((float) Math.cos(Math.toRadians(-horizontalAngle)) , 0, (float) -Math.sin(Math.toRadians(-horizontalAngle)));
+		return right;
+	}	
 	
 	
 
